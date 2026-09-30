@@ -94,6 +94,24 @@ flowchart TD
 
 ---
 
+## 🔑 How to Get a Free Gemini API Key (API Key)
+
+Elevate AI requires a free Google Gemini API Key to power the technical mock questions and bar-raiser evaluations. Follow these simple steps:
+
+1. **Visit Google AI Studio**: Go to [https://aistudio.ggit oogle.com/app/apikey](https://aistudio.google.com/app/apikey) in your browser.
+2. **Sign In**: Log in with your standard Google (Gmail) account.
+3. **Create Key**: Click the blue button labeled **"Create API key"** (or **"Get API key"**).
+4. **Select Project**: Choose **"Create API key in new project"**.
+5. **Copy the Key**: Click **"Copy"** next to the newly generated key (it starts with `AIzaSy...`).
+6. **Apply to Project**:
+   - **Method A (Easiest)**: Open the `.env` file in the project folder and paste your key inside the quotes:
+     ```env
+     GEMINI_API_KEY="AIzaSyYourGeneratedGeminiKey..."
+     ```
+   - **Method B**: Or simply paste it directly into the **"Gemini API Key"** input box in the left sidebar of the running app!
+
+---
+
 ## 🚀 Quickstart & Installation
 
 ### 1. Prerequisites
@@ -118,7 +136,7 @@ pip install -r requirements.txt
 ```
 
 ### 4. Configure Environment
-Create a `.env` file from `.env.example`:
+Create a `.env` file from `.env.example` (or edit the existing `.env` file):
 ```bash
 # Windows
 copy .env.example .env

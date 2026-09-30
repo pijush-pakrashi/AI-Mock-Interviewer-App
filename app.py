@@ -294,16 +294,26 @@ if 'history_manager' not in st.session_state:
 # Sidebar - Configuration
 with st.sidebar:
     st.markdown("### ⚙️ System Settings")
-    api_key = os.getenv("GEMINI_API_KEY") or st.text_input(
+    api_key_from_env = os.getenv("GEMINI_API_KEY", "")
+    api_key_from_state = st.session_state.get("user_gemini_key", "")
+    current_key_val = api_key_from_env or api_key_from_state
+
+    entered_key = st.text_input(
         "Gemini API Key",
+        value=current_key_val,
         type="password",
         help="Get a free key from https://aistudio.google.com/app/apikey"
     )
 
+    if entered_key:
+        api_key = entered_key
+        st.session_state.user_gemini_key = entered_key
+    else:
+        api_key = ""
+
     if not api_key:
-        st.warning("⚠️ Enter your Gemini API Key to enable AI coaching.")
-        st.caption("You can also define `GEMINI_API_KEY` inside `.env`.")
-        st.stop()
+        st.info("💡 Enter your free Gemini API key to activate AI mock interviews.")
+        st.caption("Get key: [Google AI Studio](https://aistudio.google.com/app/apikey)")
 
     model_option = st.selectbox(
         "Gemini Model Engine",
@@ -312,23 +322,26 @@ with st.sidebar:
         help="Flash is ultra-fast with multi-modal audio support."
     )
 
-# Initialize Backend AI Manager
-try:
-    if (
-        'manager' not in st.session_state 
-        or st.session_state.get('current_api_key') != api_key 
-        or st.session_state.get('current_model_choice') != model_option
-    ):
-        st.session_state.manager = InterviewManager(api_key=api_key, preferred_model=model_option)
-        st.session_state.current_api_key = api_key
-        st.session_state.current_model_choice = model_option
-except Exception as e:
-    st.sidebar.error(f"Failed to connect to Gemini AI: {e}")
-    st.stop()
+# Initialize Backend AI Manager if Key is Present
+if api_key:
+    try:
+        if (
+            'manager' not in st.session_state 
+            or st.session_state.get('current_api_key') != api_key 
+            or st.session_state.get('current_model_choice') != model_option
+        ):
+            st.session_state.manager = InterviewManager(api_key=api_key, preferred_model=model_option)
+            st.session_state.current_api_key = api_key
+            st.session_state.current_model_choice = model_option
+    except Exception as e:
+        st.sidebar.error(f"Failed to connect to Gemini AI: {e}")
+
 
 # Initialize Session State
-if 'candidate_profile' not in st.session_state:
-    st.session_state.candidate_profile = None
+if 'candidate_profile' not in st.session_state or st.session_state.candidate_profile is None:
+    # Auto-login to the last active profile from SQLite database
+    st.session_state.candidate_profile = st.session_state.history_manager.get_last_active_profile()
+
 if 'edit_profile_mode' not in st.session_state:
     st.session_state.edit_profile_mode = False
 if 'questions' not in st.session_state:
@@ -348,10 +361,31 @@ if 'interview_meta' not in st.session_state:
 if 'session_saved_id' not in st.session_state:
     st.session_state.session_saved_id = None
 
-# --- CANDIDATE REGISTRATION MODAL / STEP ---
+# --- CANDIDATE REGISTRATION / LOGIN MODAL ---
 if not st.session_state.candidate_profile or st.session_state.edit_profile_mode:
+    # Check if there are previously saved candidate profiles
+    existing_profiles = st.session_state.history_manager.get_all_profiles()
+
+    if existing_profiles and not st.session_state.edit_profile_mode:
+        st.markdown("### 🔑 Candidate Login")
+        st.info("Found existing registered profile(s). You can log in with 1-click or register a new candidate.")
+        
+        profile_labels = [f"{p['name']} ({p.get('degree', '').split('(')[0].strip()} • {p.get('branch', '').split('(')[0].strip()})" for p in existing_profiles]
+        selected_prof_idx = st.selectbox("Select Your Profile:", range(len(existing_profiles)), format_func=lambda i: profile_labels[i])
+        
+        col_log1, col_log2 = st.columns([1, 1])
+        with col_log1:
+            if st.button("🚀 Log In to Selected Profile", type="primary", use_container_width=True):
+                st.session_state.candidate_profile = existing_profiles[selected_prof_idx]
+                st.session_state.history_manager.save_candidate_profile(st.session_state.candidate_profile)
+                st.toast(f"Welcome back, {st.session_state.candidate_profile['name']}!")
+                st.rerun()
+        with col_log2:
+            st.caption("Or create a brand new profile below:")
+        st.divider()
+
     st.markdown("### 👤 Candidate Academic & Professional Profile")
-    st.info("💡 Please provide your educational details so Elevate AI can personalize questions and maintain your persistent revision history.")
+    st.caption("Provide your details so Elevate AI personalizes questions to your exact branch and saves your revision history.")
 
     with st.form("candidate_registration_form"):
         col1, col2 = st.columns(2)
@@ -380,7 +414,7 @@ if not st.session_state.candidate_profile or st.session_state.edit_profile_mode:
             if not candidate_name.strip():
                 st.error("Please enter your name to register.")
             else:
-                st.session_state.candidate_profile = {
+                new_profile = {
                     "name": candidate_name.strip(),
                     "email": candidate_email.strip(),
                     "degree": candidate_degree,
@@ -388,6 +422,8 @@ if not st.session_state.candidate_profile or st.session_state.edit_profile_mode:
                     "college": candidate_college.strip() or "University",
                     "stage": candidate_stage
                 }
+                st.session_state.candidate_profile = new_profile
+                st.session_state.history_manager.save_candidate_profile(new_profile)
                 st.session_state.edit_profile_mode = False
                 st.toast(f"✅ Profile saved for {candidate_name}!")
                 st.rerun()
@@ -396,7 +432,7 @@ if not st.session_state.candidate_profile or st.session_state.edit_profile_mode:
 
 # --- PROFILE BANNER ---
 profile = st.session_state.candidate_profile
-col_p1, col_p2 = st.columns([4, 1])
+col_p1, col_p2, col_p3 = st.columns([4, 1, 1])
 with col_p1:
     initials = "".join([part[0].upper() for part in profile['name'].split()[:2]]) or "U"
     st.markdown(f"""
@@ -419,6 +455,12 @@ with col_p2:
     st.write("")
     if st.button("✏️ Edit Profile", use_container_width=True):
         st.session_state.edit_profile_mode = True
+        st.rerun()
+with col_p3:
+    st.write("")
+    if st.button("🔄 Switch Profile", use_container_width=True):
+        st.session_state.candidate_profile = None
+        st.session_state.edit_profile_mode = False
         st.rerun()
 
 # --- TOP NAVIGATION: ARENA vs REVISION ---
@@ -465,51 +507,72 @@ if "Active Mock Arena" in nav_mode:
             resume_text = None
 
             if uploaded_resume:
-                resume_text = st.session_state.manager.extract_text_from_pdf(uploaded_resume)
-                word_count = len(resume_text.split())
-                st.success(f"✓ Parsed {word_count} words from resume.")
-                use_resume = st.checkbox("Tailor questions to resume background", value=True)
+                try:
+                    from pypdf import PdfReader
+                    reader = PdfReader(uploaded_resume)
+                    pages_txt = [p.extract_text() for p in reader.pages if p.extract_text()]
+                    resume_text = "\n\n".join(pages_txt)
+                    word_count = len(resume_text.split())
+                    st.success(f"✓ Parsed {word_count} words from resume.")
+                    use_resume = st.checkbox("Tailor questions to resume background", value=True)
+                except Exception as e:
+                    st.error(f"Error reading PDF: {e}")
 
         st.write("")
         if st.button("🚀 Generate Branch-Aligned Interview", type="primary", use_container_width=True):
-            with st.spinner(f"Crafting technical questions aligned with {profile['branch']} & {role}..."):
-                try:
-                    r_text = resume_text if use_resume else None
-                    questions = st.session_state.manager.generate_questions(
-                        role=role,
-                        description=description,
-                        company=company,
-                        num_questions=num_questions,
-                        resume_text=r_text,
-                        difficulty=difficulty,
-                        tone=tone,
-                        candidate_profile=st.session_state.candidate_profile
-                    )
-                    
-                    if not questions:
-                        st.error("Failed to generate questions. Please try again.")
-                    else:
-                        st.session_state.questions = questions
-                        st.session_state.current_q_idx = 0
-                        st.session_state.evaluations = {}
-                        st.session_state.candidate_answers = {}
-                        st.session_state.final_report = None
-                        st.session_state.study_materials = None
-                        st.session_state.session_saved_id = None
-                        st.session_state.interview_meta = {
-                            "role": role,
-                            "company": company,
-                            "difficulty": difficulty,
-                            "tone": tone
-                        }
-                        st.toast("✅ Customized questions generated!")
-                        st.rerun()
-                except Exception as e:
-                    st.error(f"Generation error: {e}")
+            if not api_key:
+                st.error("⚠️ Please enter your Gemini API Key in the left sidebar to generate questions.")
+            elif 'manager' not in st.session_state:
+                st.error("⚠️ AI Coach is initializing. Please verify your API key.")
+            else:
+                with st.spinner(f"Crafting technical questions aligned with {profile['branch']} & {role}..."):
+                    try:
+                        r_text = resume_text if use_resume else None
+                        questions = st.session_state.manager.generate_questions(
+                            role=role,
+                            description=description,
+                            company=company,
+                            num_questions=num_questions,
+                            resume_text=r_text,
+                            difficulty=difficulty,
+                            tone=tone,
+                            candidate_profile=st.session_state.candidate_profile
+                        )
+                        
+                        if not questions:
+                            st.error("Failed to generate questions. Please try again.")
+                        else:
+                            st.session_state.questions = questions
+                            st.session_state.current_q_idx = 0
+                            st.session_state.evaluations = {}
+                            st.session_state.candidate_answers = {}
+                            st.session_state.final_report = None
+                            st.session_state.study_materials = None
+                            st.session_state.session_saved_id = None
+                            st.session_state.interview_meta = {
+                                "role": role,
+                                "company": company,
+                                "difficulty": difficulty,
+                                "tone": tone
+                            }
+                            st.toast("✅ Customized questions generated!")
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Generation error: {e}")
 
     # If no questions active, show landing prompt
     if not st.session_state.questions:
-        st.info("👈 Select your role or customize the settings on the sidebar, then click **'🚀 Generate Branch-Aligned Interview'** to begin.")
+        if not api_key:
+            st.warning("""
+            ### 🔑 Gemini API Key Required
+            To generate AI mock interview questions and bar-raiser evaluations, please enter your **Gemini API Key** in the left sidebar under **System Settings**.
+            
+            - 🆓 **Need a free key?** You can generate one in 30 seconds at [Google AI Studio](https://aistudio.google.com/app/apikey).
+            - 🔒 Your key is kept secure in your local browser session and never stored publicly.
+            """)
+        else:
+            st.info("👈 Select your role or customize the settings on the sidebar, then click **'🚀 Generate Branch-Aligned Interview'** to begin.")
+            
         if history_count > 0:
             st.markdown(f"💡 *You have **{history_count} previous mock test(s)** saved. Switch to the **'Mock Test History & Revision'** tab above to revise them anytime!*")
         st.stop()

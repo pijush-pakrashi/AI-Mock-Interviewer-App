@@ -3,6 +3,7 @@
 Provides comprehensive interview orchestration, resume parsing,
 multi-dimensional evaluation, academic branch-aligned question generation,
 text-to-speech feedback, and exportable analytics powered by Google Gemini.
+Features automatic model discovery and multi-model fallback to prevent 404 errors.
 """
 
 import io
@@ -28,12 +29,6 @@ from gtts import gTTS
 class InterviewManager:
     """Manages the lifecycle of an AI-driven technical mock interview."""
 
-    SUPPORTED_MODELS = [
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-        "gemini-2.0-flash-exp",
-    ]
-
     def __init__(self, api_key: str, preferred_model: Optional[str] = None):
         """Initializes Gemini AI client with model discovery and fallback."""
         genai.configure(api_key=api_key)
@@ -43,27 +38,91 @@ class InterviewManager:
 
     def _select_model(self, preferred_model: Optional[str]) -> str:
         """Selects the best available generative model for the configured API key."""
+        available_models = self.get_available_models()
+
         if preferred_model:
+            # Check if exact preferred name or models/preferred name is in available
+            clean_pref = preferred_model.replace("models/", "")
+            for m in available_models:
+                if clean_pref == m or clean_pref in m.lower():
+                    return m
+            # If not discovered, return preferred_model as a trial
             return preferred_model
 
-        try:
-            available_models = [
-                m.name for m in genai.list_models()
-                if "generateContent" in m.supported_generation_methods
-            ]
-            
-            # Prefer flash variants for speed and audio multimodality
-            for target in ["1.5-flash", "flash", "1.5-pro", "gemini"]:
-                match = next((m for m in available_models if target in m.lower()), None)
-                if match:
-                    return match.replace("models/", "")
+        # Prioritized heuristic selection
+        for target in ["1.5-flash", "flash", "2.0-flash", "1.5-pro", "gemini"]:
+            match = next((m for m in available_models if target in m.lower()), None)
+            if match:
+                return match
 
-            if available_models:
-                return available_models[0].replace("models/", "")
-        except Exception:
-            pass
+        if available_models:
+            return available_models[0]
 
         return "gemini-1.5-flash"
+
+    def get_available_models(self) -> List[str]:
+        """Discovers all models supported by the current API key that support generateContent."""
+        try:
+            models = []
+            for m in genai.list_models():
+                supported = getattr(m, "supported_generation_methods", [])
+                if "generateContent" in supported:
+                    name = m.name.replace("models/", "")
+                    models.append(name)
+            return models
+        except Exception:
+            return []
+
+    def _generate_with_fallback(self, contents: Any) -> Any:
+        """Executes content generation with an automatic multi-model fallback chain."""
+        try:
+            return self.model.generate_content(contents)
+        except Exception as initial_err:
+            err_str = str(initial_err).lower()
+            # If it's not a model not found / unsupported error, raise immediately
+            if "404" not in err_str and "not found" not in err_str and "unsupported" not in err_str:
+                raise initial_err
+
+            # Build list of alternative candidates
+            candidates: List[str] = []
+            discovered = self.get_available_models()
+            for d in discovered:
+                if d not in candidates:
+                    candidates.append(d)
+
+            # Industry common model identifiers
+            defaults = [
+                "gemini-1.5-flash-latest",
+                "gemini-1.5-flash-001",
+                "gemini-1.5-flash-002",
+                "gemini-1.5-flash",
+                "models/gemini-1.5-flash",
+                "gemini-2.0-flash-exp",
+                "gemini-2.0-flash",
+                "gemini-1.5-pro-latest",
+                "gemini-1.5-pro",
+                "gemini-pro",
+            ]
+            for d in defaults:
+                if d not in candidates:
+                    candidates.append(d)
+
+            last_error = initial_err
+            for candidate_name in candidates:
+                if candidate_name == self.model_name:
+                    continue
+                try:
+                    alt_model = genai.GenerativeModel(candidate_name)
+                    response = alt_model.generate_content(contents)
+                    # Adopt this working model for future calls in the session
+                    self.model = alt_model
+                    self.model_name = candidate_name
+                    return response
+                except Exception as cand_err:
+                    last_error = cand_err
+                    continue
+
+            raise last_error
 
     def extract_text_from_pdf(self, pdf_file) -> str:
         """Extracts and sanitizes text from an uploaded resume PDF."""
@@ -137,7 +196,7 @@ class InterviewManager:
             "intros, or concluding remarks."
         )
 
-        response = self.model.generate_content(prompt)
+        response = self._generate_with_fallback(prompt)
         raw_output = response.text.strip()
 
         questions = [q.strip() for q in raw_output.split("|||") if q.strip()]
@@ -211,7 +270,7 @@ class InterviewManager:
         if candidate_input_text:
             contents.append(candidate_input_text)
 
-        response = self.model.generate_content(contents)
+        response = self._generate_with_fallback(contents)
         return response.text
 
     def parse_evaluation_scores(self, eval_text: str) -> Dict[str, float]:
@@ -314,7 +373,7 @@ class InterviewManager:
             "Keep it crisp, objective, and deeply constructive."
         )
 
-        response = self.model.generate_content(prompt)
+        response = self._generate_with_fallback(prompt)
         return response.text
 
     def generate_study_materials(self, final_report: str) -> str:
@@ -329,7 +388,7 @@ class InterviewManager:
             "- **Hands-On Mini Coding / Design Challenges**\n"
         )
 
-        response = self.model.generate_content(prompt)
+        response = self._generate_with_fallback(prompt)
         return response.text
 
     def chat_about_evaluation(
@@ -358,7 +417,7 @@ class InterviewManager:
             "Use clear analogies or code keywords to clarify where they lost points and how to phrase it like a Senior Engineer."
         )
 
-        response = self.model.generate_content(prompt)
+        response = self._generate_with_fallback(prompt)
         return response.text
 
     def export_full_interview_markdown(
