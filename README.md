@@ -3,15 +3,17 @@
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://streamlit.io)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Powered by Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange.svg)](https://aistudio.google.com/)
+[![SQLite Persistent Storage](https://img.shields.io/badge/Storage-SQLite%20Auto--Save-blue.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Multi-Modal](https://img.shields.io/badge/Audio-Multimodal%20Native-brightgreen.svg)]()
 
-> **Elevate AI** is an enterprise-grade technical interview simulation and performance acceleration platform. Powered by Google Gemini multi-modal models, it allows candidates to register their educational degree, academic branch, and career goals, conducting branch-tailored technical mock interviews with granular bar-raiser evaluations.
+> **Elevate AI** is an enterprise-grade technical interview simulation, bar-raiser assessment, and persistent revision platform. Powered by Google Gemini multi-modal models and an embedded SQLite history engine, it conducts branch-adaptive technical mock interviews, provides multi-metric evaluations, and permanently saves all sessions so candidates can revise past questions, feedback, and 10/10 exemplary answers anytime.
 
 ---
 
 ## 📑 Table of Contents
 - [Key Features](#-key-features)
+- [Mock Test History & Revision Center](#-mock-test-history--revision-center)
 - [Academic Branch & Degree Personalization](#-academic-branch--degree-personalization)
 - [System Architecture](#-system-architecture)
 - [Live Workflow](#-live-workflow)
@@ -28,7 +30,8 @@
 ## 🌟 Key Features
 
 - **👤 Candidate Registration & Profile Onboarding**: Save candidate profile with Full Name, Email, College/University, Degree (`B.Tech`, `BCA`, `MCA`, `M.Tech`, `B.Sc`), and Academic Branch (`CSE`, `IT`, `ECE`, `AI/DS`, `EEE`, `Mechanical`, etc.).
-- **🎓 Academic Branch-Adaptive Questions**: Automatically connects your academic discipline with the target job role (e.g. testing core OS/DBMS/DSA for CSE; low-level architectures & network protocols for ECE; mathematical intuition & inference pipelines for AI/DS).
+- **📚 Persistent Mock Test History & Revision**: Built-in SQLite database automatically stores completed mock tests with all questions, candidate answers, code, scores, and exemplary responses for exam revision.
+- **🎓 Academic Branch-Adaptive Questions**: Automatically connects academic disciplines with target software engineering roles (OS/DBMS/DSA for CSE; low-level architectures & network protocols for ECE; mathematical intuition & inference pipelines for AI/DS).
 - **🎯 1-Click Role Presets**: Immediate configurations for *Campus Placement SDE, Product-Based SDE-1, Full-Stack Architect, AI/LLM Engineer, and DevOps/SRE*.
 - **📄 Resume Contextualization**: Automatically parses PDF resumes using `pypdf`, aligning technical questions with the candidate's actual projects, stack, and seniority.
 - **🎙️ Multi-Modal Response Engine**: Candidates can submit responses through:
@@ -39,6 +42,17 @@
 - **🔊 Interactive Audio Feedback**: Integrated text-to-speech synthesized through browser SpeechSynthesis and `gTTS`.
 - **💬 Elevate Follow-Up Chat**: Candidates can challenge ratings, inquire why they lost points, or ask for senior-level rephrasing in a threaded conversational assistant.
 - **📈 Executive Dossier & Learning Path**: Synthesizes a hiring recommendation (*Strong Hire, Hire, Borderline, Needs Polish*) and generates an exportable Markdown dossier with candidate credentials.
+
+---
+
+## 📚 Mock Test History & Revision Center
+
+Every completed mock test session is automatically preserved in a zero-configuration SQLite database (`data/elevate_history.db`). Candidates can switch to the **"Mock Test History & Revision"** tab to:
+
+- 📊 **Track Improvement Over Time**: View composite average score trends and total completed mock interviews.
+- 📖 **Question-by-Question Deep Dive**: Re-read the exact questions asked and compare candidate submitted answers against the Bar-Raiser critique.
+- 🌟 **10/10 Exemplary Response Revision**: Quickly revise model answers before real campus placement or company interviews.
+- 📥 **Re-Export Dossiers**: Re-download past interview assessment dossiers at any time.
 
 ---
 
@@ -72,21 +86,11 @@ flowchart TD
     end
 
     GeminiEval --> UI
-    GeminiEval -->|Audio Feedback Synthesis| TTS[gTTS Audio Buffer / Web Speech]
+    GeminiReport -->|Auto-Persist Session| History[(SQLite History DB)]
+    History <-->|Revision & Historical Analysis| UI
     GeminiReport -->|Export Dossier with Profile| Export[Personalized Markdown Dossier]
     Export --> User
 ```
-
----
-
-## 🔄 Live Workflow
-
-1. **Candidate Onboarding**: Enter your Name, Email, University, Degree (`B.Tech`, `BCA`, `MCA`, etc.), and Branch (`CSE`, `IT`, `ECE`, etc.).
-2. **Profile Setup**: Choose a role preset (or customize your own), define target company and difficulty level, and optionally upload a PDF resume.
-3. **Dynamic Generation**: Gemini creates targeted technical questions bridging your academic foundation and target job requirements.
-4. **Candidate Response**: Listen to the question via native speech, write an explanation, paste code/schemas, or record voice via microphone.
-5. **Real-time Critique**: Receive immediate multi-metric ratings, positive highlights, exact omissions, an exemplary 10/10 response, and recommended study terms.
-6. **Dossier & Learning Path**: Once completed, generate the Executive Assessment and download your complete candidate dossier.
 
 ---
 
@@ -146,6 +150,7 @@ elevate-ai-coach-main/
 ├── .gitignore               # Excludes secrets, venv, and binary artifacts
 ├── app.py                   # Streamlit Frontend application & design system
 ├── interview_manager.py     # Backend AI service layer, scoring & Gemini logic
+├── history_manager.py       # SQLite database persistence & revision engine
 ├── requirements.txt         # Pinned production Python dependencies
 └── README.md                # Comprehensive documentation
 ```
@@ -154,7 +159,7 @@ elevate-ai-coach-main/
 
 ## 🐙 Git Setup & Repository Management
 
-To initialize this project under your own GitHub repository:
+To push this project to your own GitHub repository:
 
 ```bash
 # 1. Initialize local repository
@@ -164,7 +169,7 @@ git init
 git add .
 
 # 3. Create your initial commit
-git commit -m "feat: complete candidate registration and branch-adaptive mock interview"
+git commit -m "feat: complete Elevate AI interview coach with persistent revision history"
 
 # 4. Rename default branch to main
 git branch -M main
