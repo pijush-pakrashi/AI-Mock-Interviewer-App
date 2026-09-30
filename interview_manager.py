@@ -1,8 +1,8 @@
 """Elevate AI - Interview Manager Module.
 
 Provides comprehensive interview orchestration, resume parsing,
-multi-dimensional evaluation, text-to-speech feedback, and exportable analytics
-powered by Google Gemini.
+multi-dimensional evaluation, academic branch-aligned question generation,
+text-to-speech feedback, and exportable analytics powered by Google Gemini.
 """
 
 import io
@@ -86,22 +86,48 @@ class InterviewManager:
         num_questions: int = 3,
         resume_text: Optional[str] = None,
         difficulty: str = "Intermediate",
-        tone: str = "Professional"
+        tone: str = "Professional",
+        candidate_profile: Optional[Dict[str, Any]] = None
     ) -> List[str]:
-        """Generates realistic, targeted technical interview questions."""
+        """Generates realistic technical interview questions tailored to academic branch, degree, and target role."""
         prompt = (
-            f"You are a Principal Engineering Interviewer conducting a mock interview for the role of '{role}'.\n"
-            f"Target Company / Industry: {company or 'Top-Tier Tech Company'}\n"
+            f"You are a Principal Engineering Interviewer and Bar-Raiser conducting a technical mock interview.\n"
+            f"Target Role: '{role}'\n"
+            f"Target Company / Domain: {company or 'Top-Tier Tech Enterprise'}\n"
             f"Difficulty Level: {difficulty}\n"
             f"Interviewer Tone: {tone}\n"
-            f"Required Job Skills / Description: {description}\n"
+            f"Job Description & Skills: {description}\n"
         )
+
+        if candidate_profile:
+            name = candidate_profile.get("name", "Candidate")
+            degree = candidate_profile.get("degree", "Engineering / Technology")
+            branch = candidate_profile.get("branch", "Computer Science")
+            stage = candidate_profile.get("stage", "Fresher")
+            college = candidate_profile.get("college", "University")
+
+            prompt += (
+                f"\n--- CANDIDATE ACADEMIC & PROFESSIONAL PROFILE ---\n"
+                f"- Candidate Name: {name}\n"
+                f"- Education Degree: {degree}\n"
+                f"- Academic Discipline / Branch: {branch}\n"
+                f"- Career / Academic Stage: {stage}\n"
+                f"- Institution: {college}\n\n"
+                f"CRITICAL INSTRUCTION FOR ADAPTIVE QUESTION CRAFTING:\n"
+                f"Tailor the questions to connect their academic branch ({branch}) and degree level ({degree}) "
+                f"with the target role ({role}).\n"
+                f"- If branch is Computer Science / IT: Drill deep on OS fundamentals, DBMS internals, DSA, concurrency, and system design.\n"
+                f"- If branch is ECE / EE: Probe how hardware-software interfaces, low-level architecture, C/C++, network protocols, or embedded concepts bridge with modern software engineering.\n"
+                f"- If branch is Data Science / AI: Focus on mathematical intuition, model pipelines, inference latency, feature stores, and MLOps.\n"
+                f"- If stage is Student/Fresher: Balance conceptual computer science rigor with practical hands-on problem solving.\n"
+                f"- If stage is Experienced: Emphasize trade-offs, production reliability, scalability, and architecture.\n"
+            )
 
         if resume_text:
             prompt += (
-                f"\nCandidate Resume Insights:\n"
-                f"'''\n{resume_text[:2500]}\n'''\n"
-                "Align questions with the candidate's stated background, validating both core strengths and technical depth.\n"
+                f"\n--- CANDIDATE RESUME EXCERPT ---\n"
+                f"{resume_text[:2500]}\n"
+                "Incorporate their verified projects, internships, and stated technologies into the technical questioning.\n"
             )
 
         prompt += (
@@ -116,7 +142,6 @@ class InterviewManager:
 
         questions = [q.strip() for q in raw_output.split("|||") if q.strip()]
 
-        # Fallback parsing in case separator wasn't used
         if len(questions) < num_questions:
             questions = [
                 re.sub(r"^\d+[\.\)]\s*", "", line).strip()
@@ -131,12 +156,23 @@ class InterviewManager:
         question: str,
         text_answer: Optional[str] = None,
         code_snippet: Optional[str] = None,
-        audio_bytes: Optional[bytes] = None
+        audio_bytes: Optional[bytes] = None,
+        candidate_profile: Optional[Dict[str, Any]] = None
     ) -> str:
         """Evaluates a candidate's answer across multiple dimensions."""
         prompt = (
             f"You are a rigorous, highly experienced Technical Bar-Raiser Interviewer.\n"
             f"Interview Question Asked: '{question}'\n\n"
+        )
+
+        if candidate_profile:
+            prompt += (
+                f"Candidate Context: {candidate_profile.get('name', 'Candidate')} | "
+                f"Degree: {candidate_profile.get('degree', 'Tech')} in {candidate_profile.get('branch', 'CS')} "
+                f"({candidate_profile.get('stage', 'Fresher')})\n\n"
+            )
+
+        prompt += (
             "Critique the candidate's answer thoroughly. Be realistic, insightful, and strict.\n"
             "Score each of the following dimensions on a 10-point scale (use decimals if appropriate):\n"
             "- Overall Score: X/10 (composite overall assessment)\n"
@@ -204,7 +240,6 @@ class InterviewManager:
                 except ValueError:
                     metrics[key] = 0.0
 
-        # Fallback if only single Score pattern is matched
         if metrics["overall"] == 0.0:
             general_match = re.search(r"Score[:\s\*]*(\d+(?:\.\d+)?)\s*(?:/|out of)\s*10", eval_text, re.IGNORECASE)
             if general_match:
@@ -244,22 +279,38 @@ class InterviewManager:
         fp.seek(0)
         return fp
 
-    def generate_final_report(self, qas: List[Dict[str, str]]) -> str:
+    def generate_final_report(
+        self,
+        qas: List[Dict[str, str]],
+        candidate_profile: Optional[Dict[str, Any]] = None
+    ) -> str:
         """Synthesizes a comprehensive executive Final Interview Report."""
         prompt = (
-            "You are an executive Technical Hiring Director compiling an official Candidate Assessment Report.\n"
-            "Here is the candidate's interview transcript and evaluations:\n\n"
+            "You are an executive Technical Hiring Director compiling an official Candidate Assessment Dossier.\n"
         )
+
+        if candidate_profile:
+            prompt += (
+                f"Candidate Credentials:\n"
+                f"- Name: {candidate_profile.get('name', 'Candidate')}\n"
+                f"- Education Degree: {candidate_profile.get('degree', 'Technical Degree')}\n"
+                f"- Academic Discipline / Branch: {candidate_profile.get('branch', 'Computer Science')}\n"
+                f"- Academic / Experience Stage: {candidate_profile.get('stage', 'Fresher')}\n"
+                f"- Institution: {candidate_profile.get('college', 'University')}\n\n"
+            )
+
+        prompt += "Here is the candidate's interview transcript and evaluations:\n\n"
         for i, qa in enumerate(qas):
             prompt += f"### Question {i+1}:\n{qa['question']}\n\nEvaluation Feedback:\n{qa['evaluation']}\n\n"
 
         prompt += (
             "Generate a professional, structured Final Assessment Report in clean markdown:\n"
-            "1. **Executive Summary & Readiness Index**: (Provide a hiring recommendation: "
-            "'Strong Hire (L5/L6 Senior)', 'Hire (L4 Mid-Level)', 'Borderline / Needs Practice', or 'Not Ready Yet')\n"
-            "2. **Core Technical Strengths & Highlights**: (Key areas where candidate excelled)\n"
-            "3. **Critical Knowledge Gaps & Antipatterns**: (Specific technical blind spots observed)\n"
-            "4. **Strategic 30-Day Action Plan**: (High-impact study priorities to reach peak interview readiness)\n\n"
+            "1. **Executive Summary & Hiring Readiness Index**: (Provide an official hiring verdict: "
+            "'Strong Hire (L5/L6 Senior)', 'Hire (L4 Mid-Level / High-Potential Fresher)', 'Borderline / Needs Practice', or 'Not Ready Yet')\n"
+            "2. **Branch & Educational Alignment Analysis**: (How effectively their academic branch & degree knowledge translates into real-world software/system engineering)\n"
+            "3. **Core Technical Strengths & Highlights**: (Key areas where candidate excelled)\n"
+            "4. **Critical Knowledge Gaps & Antipatterns**: (Specific technical blind spots observed)\n"
+            "5. **Strategic 30-Day Action Plan**: (High-impact study priorities to reach peak interview readiness)\n\n"
             "Keep it crisp, objective, and deeply constructive."
         )
 
@@ -317,15 +368,26 @@ class InterviewManager:
         difficulty: str,
         qas: List[Dict[str, str]],
         final_report: Optional[str],
-        study_materials: Optional[str]
+        study_materials: Optional[str],
+        candidate_profile: Optional[Dict[str, Any]] = None
     ) -> str:
         """Packages the entire interview into an exportable Markdown dossier."""
         doc = [
             f"# 📋 Elevate AI - Technical Interview Dossier",
+        ]
+
+        if candidate_profile:
+            doc.append(f"**Candidate:** {candidate_profile.get('name', 'N/A')} ({candidate_profile.get('email', '')})")
+            doc.append(
+                f"**Education:** {candidate_profile.get('degree', '')} in {candidate_profile.get('branch', '')} "
+                f"| {candidate_profile.get('college', '')} | Status: {candidate_profile.get('stage', '')}"
+            )
+
+        doc.extend([
             f"**Target Role:** {role} | **Company:** {company or 'General Tech'} | **Difficulty:** {difficulty}",
             f"---\n",
             "## 📝 Question Breakdown & Evaluations\n",
-        ]
+        ])
 
         for i, qa in enumerate(qas):
             doc.append(f"### Question {i + 1}: {qa['question']}\n")

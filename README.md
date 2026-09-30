@@ -6,12 +6,13 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Multi-Modal](https://img.shields.io/badge/Audio-Multimodal%20Native-brightgreen.svg)]()
 
-> **Elevate AI** is an enterprise-grade technical interview simulation and performance acceleration platform. Powered by Google Gemini multi-modal models, it conducts realistic, high-pressure technical mock interviews, delivers granular bar-raiser evaluations, and provides tailored 30-day learning roadmaps.
+> **Elevate AI** is an enterprise-grade technical interview simulation and performance acceleration platform. Powered by Google Gemini multi-modal models, it allows candidates to register their educational degree, academic branch, and career goals, conducting branch-tailored technical mock interviews with granular bar-raiser evaluations.
 
 ---
 
 ## 📑 Table of Contents
 - [Key Features](#-key-features)
+- [Academic Branch & Degree Personalization](#-academic-branch--degree-personalization)
 - [System Architecture](#-system-architecture)
 - [Live Workflow](#-live-workflow)
 - [Multi-Dimensional Evaluation](#-multi-dimensional-evaluation)
@@ -26,7 +27,9 @@
 
 ## 🌟 Key Features
 
-- **🎯 Role Presets & 1-Click Launch**: Instant configurations for *Full-Stack Architect, AI/LLM Application Engineer, Backend & Distributed Systems, Frontend & Web Performance, and DevOps/SRE*.
+- **👤 Candidate Registration & Profile Onboarding**: Save candidate profile with Full Name, Email, College/University, Degree (`B.Tech`, `BCA`, `MCA`, `M.Tech`, `B.Sc`), and Academic Branch (`CSE`, `IT`, `ECE`, `AI/DS`, `EEE`, `Mechanical`, etc.).
+- **🎓 Academic Branch-Adaptive Questions**: Automatically connects your academic discipline with the target job role (e.g. testing core OS/DBMS/DSA for CSE; low-level architectures & network protocols for ECE; mathematical intuition & inference pipelines for AI/DS).
+- **🎯 1-Click Role Presets**: Immediate configurations for *Campus Placement SDE, Product-Based SDE-1, Full-Stack Architect, AI/LLM Engineer, and DevOps/SRE*.
 - **📄 Resume Contextualization**: Automatically parses PDF resumes using `pypdf`, aligning technical questions with the candidate's actual projects, stack, and seniority.
 - **🎙️ Multi-Modal Response Engine**: Candidates can submit responses through:
   - 📝 **Verbal/Narrative Explanation**
@@ -35,7 +38,20 @@
 - **📊 Bar-Raiser Multi-Metric Scoring**: Real-time evaluation across **Accuracy**, **System Depth**, **Clarity**, and **Industry Terminology**.
 - **🔊 Interactive Audio Feedback**: Integrated text-to-speech synthesized through browser SpeechSynthesis and `gTTS`.
 - **💬 Elevate Follow-Up Chat**: Candidates can challenge ratings, inquire why they lost points, or ask for senior-level rephrasing in a threaded conversational assistant.
-- **📈 Executive Dossier & Learning Path**: Synthesizes a hiring recommendation (*Strong Hire, Hire, Borderline, Needs Polish*) and generates an exportable Markdown dossier.
+- **📈 Executive Dossier & Learning Path**: Synthesizes a hiring recommendation (*Strong Hire, Hire, Borderline, Needs Polish*) and generates an exportable Markdown dossier with candidate credentials.
+
+---
+
+## 🎓 Academic Branch & Degree Personalization
+
+Elevate AI customizes interview questions based on the candidate's degree and discipline:
+
+| Academic Branch | Example Tailored Focus for Software Roles |
+| :--- | :--- |
+| **Computer Science (CSE / IT)** | Operating Systems (kernel vs user space), DBMS concurrency & indexes, System Design, DSA complexity. |
+| **Electronics & Comm (ECE / EEE)** | Low-level architecture, C/C++ memory models, Embedded Systems / IoT bridging with backend cloud systems. |
+| **Data Science & AI (AI/DS)** | Model pipelines, RAG latency bottlenecks, Vector search indices, Data structures for ML algorithms. |
+| **Core Engineering (Mech/Civil to Tech)** | Fundamental logical reasoning, Clean Code practices, OOP abstractions, and transition motivation. |
 
 ---
 
@@ -43,12 +59,13 @@
 
 ```mermaid
 flowchart TD
-    User([Candidate]) -->|Voice / Code / Text| UI[Streamlit Frontend Interface]
+    User([Candidate]) -->|Profile Registration| Onboarding[Profile & Branch Engine]
+    Onboarding --> UI[Streamlit Frontend Interface]
     UI -->|PDF Resume Parsing| PDFEngine[pypdf Resume Extractor]
     UI -->|Contextual Prompting| Manager[InterviewManager Engine]
     
     subgraph AI Core [Google Gemini Multi-Modal Engine]
-        Manager -->|Question Engineering| GeminiQ[Question Generator]
+        Manager -->|Branch + Role Calibration| GeminiQ[Question Generator]
         Manager -->|Multi-Modal WAV / Text| GeminiEval[Bar-Raiser Evaluator]
         Manager -->|Follow-Up Clarification| GeminiChat[Coaching Assistant]
         Manager -->|Performance Synthesis| GeminiReport[Executive Dossier Engine]
@@ -56,7 +73,7 @@ flowchart TD
 
     GeminiEval --> UI
     GeminiEval -->|Audio Feedback Synthesis| TTS[gTTS Audio Buffer / Web Speech]
-    GeminiReport -->|Export Dossier| Export[Markdown Report File]
+    GeminiReport -->|Export Dossier with Profile| Export[Personalized Markdown Dossier]
     Export --> User
 ```
 
@@ -64,42 +81,25 @@ flowchart TD
 
 ## 🔄 Live Workflow
 
-1. **Profile Setup**: Choose a role preset (or customize your own), define target company and difficulty level, and optionally upload a PDF resume.
-2. **Dynamic Generation**: Gemini creates targeted technical questions targeting core architectural trade-offs, algorithms, and practical edge cases.
-3. **Candidate Response**: Listen to the question via native speech, write an explanation, paste code/schemas, or record voice via microphone.
-4. **Real-time Critique**: Receive immediate multi-metric ratings, positive highlights, exact omissions, an exemplary 10/10 response, and recommended study terms.
-5. **Dossier & Learning Path**: Once completed, generate the Executive Assessment and download your complete interview dossier.
-
----
-
-## 📊 Multi-Dimensional Evaluation
-
-Unlike typical generic AI feedback, Elevate AI evaluates candidate responses across 4 discrete technical dimensions:
-
-| Dimension | Weight | Focus Areas |
-| :--- | :---: | :--- |
-| **Technical Accuracy** | 25% | Factual correctness, absence of hallucinations, algorithmic precision. |
-| **Depth & Architecture** | 30% | Understanding scale, concurrency, bottlenecks, trade-offs, and failure modes. |
-| **Communication & Clarity** | 25% | Structured explanation (e.g. STAR method), conciseness, and narrative pacing. |
-| **Industry Terminology** | 20% | Seniority signals, appropriate design pattern vocabulary, and domain idioms. |
+1. **Candidate Onboarding**: Enter your Name, Email, University, Degree (`B.Tech`, `BCA`, `MCA`, etc.), and Branch (`CSE`, `IT`, `ECE`, etc.).
+2. **Profile Setup**: Choose a role preset (or customize your own), define target company and difficulty level, and optionally upload a PDF resume.
+3. **Dynamic Generation**: Gemini creates targeted technical questions bridging your academic foundation and target job requirements.
+4. **Candidate Response**: Listen to the question via native speech, write an explanation, paste code/schemas, or record voice via microphone.
+5. **Real-time Critique**: Receive immediate multi-metric ratings, positive highlights, exact omissions, an exemplary 10/10 response, and recommended study terms.
+6. **Dossier & Learning Path**: Once completed, generate the Executive Assessment and download your complete candidate dossier.
 
 ---
 
 ## 🚀 Quickstart & Installation
 
-### Prerequisites
+### 1. Prerequisites
 - Python **3.10** or higher
 - A Google Gemini API key ([Get a free key here](https://aistudio.google.com/app/apikey))
 - Git installed on your machine
 
-### 1. Clone or Open Project
-```bash
-cd elevate-ai-coach-main
-```
-
 ### 2. Set Up Virtual Environment (Recommended)
 ```bash
-# Windows
+# Windows PowerShell
 python -m venv .venv
 .\.venv\Scripts\activate
 
@@ -164,7 +164,7 @@ git init
 git add .
 
 # 3. Create your initial commit
-git commit -m "feat: initial commit of Elevate AI technical interview coach"
+git commit -m "feat: complete candidate registration and branch-adaptive mock interview"
 
 # 4. Rename default branch to main
 git branch -M main
@@ -175,20 +175,6 @@ git remote add origin https://github.com/<YOUR_USERNAME>/<YOUR_REPOSITORY_NAME>.
 # 6. Push code to your repository
 git push -u origin main
 ```
-
----
-
-## ☁️ Deployment Guide
-
-### Deploying to Streamlit Community Cloud
-1. Push your repository to GitHub.
-2. Visit [share.streamlit.io](https://share.streamlit.io).
-3. Connect your repository and select `app.py` as the entry point.
-4. Under **Advanced Settings > Secrets**, add:
-   ```toml
-   GEMINI_API_KEY = "your_gemini_api_key_here"
-   ```
-5. Click **Deploy**.
 
 ---
 

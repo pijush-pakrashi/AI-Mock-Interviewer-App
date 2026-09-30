@@ -12,7 +12,7 @@ load_dotenv()
 
 # Streamlit Page Configuration
 st.set_page_config(
-    page_title="Elevate AI - Principal Technical Interview Coach",
+    page_title="Elevate AI - Branch-Adaptive Technical Interview Coach",
     page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -34,8 +34,8 @@ st.markdown("""
     /* Hero Header */
     .hero-container {
         text-align: center;
-        padding: 1.5rem 1rem 1rem 1rem;
-        margin-bottom: 1.5rem;
+        padding: 1.2rem 1rem 0.8rem 1rem;
+        margin-bottom: 1rem;
     }
     .hero-title {
         font-size: 3.2rem;
@@ -44,13 +44,13 @@ st.markdown("""
         background: linear-gradient(135deg, #00F2FE 0%, #4FACFE 50%, #6B8CFF 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
     }
     .hero-subtitle {
         color: #94A3B8;
         font-size: 1.15rem;
-        max-width: 680px;
-        margin: 0 auto 1rem auto;
+        max-width: 720px;
+        margin: 0 auto 0.8rem auto;
         line-height: 1.6;
     }
     .badge-pill-container {
@@ -69,6 +69,59 @@ st.markdown("""
         padding: 5px 14px;
         border-radius: 9999px;
         backdrop-filter: blur(8px);
+    }
+
+    /* Candidate Profile Banner */
+    .profile-banner {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        border-radius: 16px;
+        padding: 16px 24px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+    .profile-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #38BDF8 0%, #818CF8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+        color: #0F172A;
+        font-weight: bold;
+    }
+    .profile-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #F8FAFC;
+    }
+    .profile-details {
+        font-size: 0.85rem;
+        color: #94A3B8;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+    .profile-tag {
+        background: rgba(56, 189, 248, 0.15);
+        color: #38BDF8;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+        border: 1px solid rgba(56, 189, 248, 0.3);
     }
 
     /* Question Showcase Card */
@@ -110,29 +163,7 @@ st.markdown("""
         color: #F8FAFC;
     }
 
-    /* Score Metrics Grid */
-    .metric-box {
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 14px;
-        padding: 14px;
-        text-align: center;
-    }
-    .metric-value {
-        font-size: 1.7rem;
-        font-weight: 800;
-        color: #38BDF8;
-        margin-top: 4px;
-    }
-    .metric-label {
-        font-size: 0.78rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        color: #94A3B8;
-    }
-
-    /* Button Enhancements */
+    /* Button Styling */
     .stButton>button[kind="primary"] {
         background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -150,23 +181,55 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Application Header
+# App Header
 st.markdown("""
 <div class="hero-container">
     <div class="hero-title">⚡ Elevate AI Coach</div>
     <div class="hero-subtitle">
-        Accelerate your career with simulated bar-raiser technical interviews, multi-metric scoring, and personalized mastery paths.
+        Branch-Adaptive Technical Mock Interview Platform. Connect your academic discipline, engineering degree, and real-world skills with bar-raiser AI evaluations.
     </div>
     <div class="badge-pill-container">
+        <span class="badge-pill">🎓 Academic Branch Aligned</span>
         <span class="badge-pill">🧠 Gemini Multi-Modal</span>
         <span class="badge-pill">🎙️ Voice & Text Assessment</span>
-        <span class="badge-pill">🎯 Bar-Raiser Feedback</span>
-        <span class="badge-pill">📄 Resume Contextualization</span>
+        <span class="badge-pill">📊 Bar-Raiser Feedback</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# Role Presets for Instant 1-Click Setup
+# Degree & Academic Branch Definitions
+DEGREE_OPTIONS = [
+    "B.Tech / B.E. (Bachelor of Technology / Engineering)",
+    "BCA (Bachelor of Computer Applications)",
+    "MCA (Master of Computer Applications)",
+    "M.Tech / M.E. (Master of Technology / Engineering)",
+    "B.Sc (Computer Science / IT)",
+    "M.Sc (Computer Science / Data / IT)",
+    "Diploma / Polytechnic Engineering",
+    "Other Professional Degree"
+]
+
+BRANCH_OPTIONS = [
+    "Computer Science & Engineering (CSE)",
+    "Information Technology (IT)",
+    "Electronics & Communication Engineering (ECE)",
+    "Data Science & Artificial Intelligence (AI/DS)",
+    "Electrical & Electronics Engineering (EEE)",
+    "Mechanical Engineering (with CS / Tech interest)",
+    "Civil Engineering / Other Core (Transitioning to Tech)",
+    "Management / Business & Technology"
+]
+
+CAREER_STAGES = [
+    "College Student (1st / 2nd Year)",
+    "Pre-Final Year (3rd Year Internship Preparation)",
+    "Final Year (Campus Placement Drive)",
+    "Recent Graduate / Fresher (0 - 1 Years Experience)",
+    "Junior Software Engineer (1 - 3 Years Experience)",
+    "Mid-Level to Senior Professional (3+ Years Experience)"
+]
+
+# Role Presets
 ROLE_PRESETS = {
     "Custom Configuration": {
         "role": "Full-Stack Engineer",
@@ -174,33 +237,33 @@ ROLE_PRESETS = {
         "company": "Top Tier Tech",
         "difficulty": "Intermediate"
     },
+    "Campus Placement / Fresher SDE": {
+        "role": "Graduate Software Engineer (Fresher / Campus Hire)",
+        "description": "Data Structures & Algorithms, Object-Oriented Programming (OOP), OS Fundamentals, DBMS & SQL, Computer Networks",
+        "company": "TCS / Infosys / Wipro / Cognizant",
+        "difficulty": "Intermediate"
+    },
+    "Product-Based SDE-1 (FAANG / Startups)": {
+        "role": "Software Development Engineer I (SDE-1)",
+        "description": "DSA, Clean Code, REST APIs, Database Design, System Architecture Basics, Unit Testing",
+        "company": "Google / Amazon / Microsoft",
+        "difficulty": "Advanced"
+    },
     "Full-Stack Architect": {
         "role": "Senior Full-Stack Architect",
-        "description": "Modern React, Next.js, Node.js/FastAPI, Distributed Caching (Redis), PostgreSQL, Event-Driven Architecture (Kafka), WebSockets",
+        "description": "Modern React, Next.js, FastAPI/Node, Distributed Caching (Redis), PostgreSQL, Event-Driven Architecture, WebSockets",
         "company": "Stripe",
         "difficulty": "Advanced"
     },
     "AI / Machine Learning Engineer": {
         "role": "AI & LLM Application Engineer",
-        "description": "Python, PyTorch, LangChain/LlamaIndex, RAG Pipelines, Vector Databases (Pinecone/Milvus), Fine-tuning, Inference Optimization",
+        "description": "Python, PyTorch, LangChain, RAG Pipelines, Vector Databases, Fine-tuning, Inference Optimization",
         "company": "OpenAI",
         "difficulty": "Advanced"
     },
-    "Backend & Distributed Systems": {
-        "role": "Staff Backend Engineer",
-        "description": "Go/Java, High-throughput Distributed Systems, Consensus Protocols (Raft/Paxos), Database Sharding, Kubernetes, Observability",
-        "company": "Google",
-        "difficulty": "Expert"
-    },
-    "Frontend & Web Performance": {
-        "role": "Senior Frontend Engineer",
-        "description": "TypeScript, React 19, Web Vitals Optimization, State Management, SSR/SSG, Browser Rendering Engine internals, Design Systems",
-        "company": "Netflix",
-        "difficulty": "Advanced"
-    },
-    "DevOps & Site Reliability (SRE)": {
+    "DevOps & Cloud SRE": {
         "role": "Cloud Infrastructure & SRE",
-        "description": "Terraform, AWS/GCP Multi-region Architecture, Docker, Kubernetes, Prometheus, Chaos Engineering, Zero-Downtime Deployments",
+        "description": "Terraform, AWS/GCP, Docker, Kubernetes, Prometheus, CI/CD Pipelines, Zero-Downtime Deployments",
         "company": "Amazon AWS",
         "difficulty": "Intermediate"
     }
@@ -224,7 +287,7 @@ with st.sidebar:
         "Gemini Model Engine",
         ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
         index=0,
-        help="Flash is ultra-fast with multi-modal audio support. Pro offers deeper reasoning."
+        help="Flash is ultra-fast with multi-modal audio support."
     )
 
 # Initialize Session State & Backend Engine
@@ -241,7 +304,11 @@ except Exception as e:
     st.sidebar.error(f"Failed to connect to Gemini AI: {e}")
     st.stop()
 
-# Session State Variables
+# Initialize Session State
+if 'candidate_profile' not in st.session_state:
+    st.session_state.candidate_profile = None
+if 'edit_profile_mode' not in st.session_state:
+    st.session_state.edit_profile_mode = False
 if 'questions' not in st.session_state:
     st.session_state.questions = []
 if 'current_q_idx' not in st.session_state:
@@ -255,7 +322,80 @@ if 'study_materials' not in st.session_state:
 if 'interview_meta' not in st.session_state:
     st.session_state.interview_meta = {}
 
-# Sidebar - Interview Setup
+# --- CANDIDATE ONBOARDING / REGISTRATION STEP ---
+if not st.session_state.candidate_profile or st.session_state.edit_profile_mode:
+    st.markdown("### 👤 Candidate Academic & Professional Profile")
+    st.info("💡 Please provide your educational background so Elevate AI can tailor interview questions to your exact degree, academic branch, and career goals.")
+
+    with st.form("candidate_registration_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            name_val = st.session_state.candidate_profile.get("name", "") if st.session_state.candidate_profile else ""
+            candidate_name = st.text_input("Full Name", value=name_val, placeholder="e.g. Rahul Sharma / Sneha Roy")
+            
+            degree_default = DEGREE_OPTIONS.index(st.session_state.candidate_profile["degree"]) if st.session_state.candidate_profile and st.session_state.candidate_profile.get("degree") in DEGREE_OPTIONS else 0
+            candidate_degree = st.selectbox("Professional Education / Degree", DEGREE_OPTIONS, index=degree_default)
+            
+            college_val = st.session_state.candidate_profile.get("college", "") if st.session_state.candidate_profile else ""
+            candidate_college = st.text_input("College / University Name", value=college_val, placeholder="e.g. MAKAUT / Heritage Institute / IIT Kharagpur")
+
+        with col2:
+            email_val = st.session_state.candidate_profile.get("email", "") if st.session_state.candidate_profile else ""
+            candidate_email = st.text_input("Email Address", value=email_val, placeholder="e.g. candidate@example.com")
+            
+            branch_default = BRANCH_OPTIONS.index(st.session_state.candidate_profile["branch"]) if st.session_state.candidate_profile and st.session_state.candidate_profile.get("branch") in BRANCH_OPTIONS else 0
+            candidate_branch = st.selectbox("Academic Discipline / Branch", BRANCH_OPTIONS, index=branch_default)
+            
+            stage_default = CAREER_STAGES.index(st.session_state.candidate_profile["stage"]) if st.session_state.candidate_profile and st.session_state.candidate_profile.get("stage") in CAREER_STAGES else 2
+            candidate_stage = st.selectbox("Current Academic / Career Stage", CAREER_STAGES, index=stage_default)
+
+        submitted = st.form_submit_button("Save Profile & Proceed to Interview 🚀", type="primary", use_container_width=True)
+        if submitted:
+            if not candidate_name.strip():
+                st.error("Please enter your name to register.")
+            else:
+                st.session_state.candidate_profile = {
+                    "name": candidate_name.strip(),
+                    "email": candidate_email.strip(),
+                    "degree": candidate_degree,
+                    "branch": candidate_branch,
+                    "college": candidate_college.strip() or "University",
+                    "stage": candidate_stage
+                }
+                st.session_state.edit_profile_mode = False
+                st.toast(f"✅ Profile saved for {candidate_name}!")
+                st.rerun()
+
+    st.stop()
+
+# --- ACTIVE PROFILE BANNER ---
+profile = st.session_state.candidate_profile
+col_p1, col_p2 = st.columns([4, 1])
+with col_p1:
+    initials = "".join([part[0].upper() for part in profile['name'].split()[:2]]) or "U"
+    st.markdown(f"""
+    <div class="profile-banner">
+        <div class="profile-info">
+            <div class="profile-avatar">{initials}</div>
+            <div>
+                <div class="profile-name">{profile['name']}</div>
+                <div class="profile-details">
+                    <span class="profile-tag">🎓 {profile['degree'].split('(')[0].strip()}</span>
+                    <span class="profile-tag">📚 {profile['branch'].split('(')[0].strip()}</span>
+                    <span>🏛️ {profile['college']}</span>
+                    <span>• {profile['stage']}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+with col_p2:
+    st.write("")
+    if st.button("✏️ Edit Profile", use_container_width=True):
+        st.session_state.edit_profile_mode = True
+        st.rerun()
+
+# --- SIDEBAR: INTERVIEW CONFIGURATION ---
 with st.sidebar:
     st.divider()
     st.markdown("### 🎯 Interview Profile")
@@ -290,8 +430,8 @@ with st.sidebar:
             use_resume = st.checkbox("Tailor questions to resume background", value=True)
 
     st.write("")
-    if st.button("🚀 Generate Interview", type="primary", use_container_width=True):
-        with st.spinner("Engineering customized interview questions..."):
+    if st.button("🚀 Generate Branch-Aligned Interview", type="primary", use_container_width=True):
+        with st.spinner(f"Crafting technical questions aligned with {profile['branch']} & {role}..."):
             try:
                 r_text = resume_text if use_resume else None
                 questions = st.session_state.manager.generate_questions(
@@ -301,7 +441,8 @@ with st.sidebar:
                     num_questions=num_questions,
                     resume_text=r_text,
                     difficulty=difficulty,
-                    tone=tone
+                    tone=tone,
+                    candidate_profile=st.session_state.candidate_profile
                 )
                 
                 if not questions:
@@ -318,31 +459,32 @@ with st.sidebar:
                         "difficulty": difficulty,
                         "tone": tone
                     }
-                    st.toast("✅ Technical questions generated!")
+                    st.toast("✅ Customized questions generated!")
                     st.rerun()
             except Exception as e:
                 st.error(f"Generation error: {e}")
 
 # If no questions active, show landing prompt
 if not st.session_state.questions:
-    st.info("👈 Select a role preset or customize your target job on the sidebar, then click **'🚀 Generate Interview'** to begin.")
+    st.info("👈 Select your role or customize the settings on the sidebar, then click **'🚀 Generate Branch-Aligned Interview'** to begin.")
     st.stop()
 
-# --- Active Interview Arena ---
+# --- ACTIVE INTERVIEW ARENA ---
 if not st.session_state.final_report:
     total_q = len(st.session_state.questions)
     current_idx = st.session_state.current_q_idx
     current_q = st.session_state.questions[current_idx]
 
-    # Progress Indicator
     progress_val = (current_idx + 1) / total_q
     st.progress(progress_val)
 
-    # Active Question Display Card
+    # Question Display Card
     st.markdown(f"""
     <div class="question-card">
         <div class="question-tag">
             <span>⚡ QUESTION {current_idx + 1} OF {total_q}</span>
+            <span>•</span>
+            <span>{profile['branch'].split('(')[-1].replace(')', '')} CONTEXT</span>
             <span>•</span>
             <span>{st.session_state.interview_meta.get('difficulty', 'Intermediate').upper()}</span>
         </div>
@@ -350,7 +492,7 @@ if not st.session_state.final_report:
     </div>
     """, unsafe_allow_html=True)
 
-    # Question Navigation and Audio Synthesizer
+    # Navigation & Audio
     col_nav1, col_nav2, col_nav3 = st.columns([1, 1, 2])
     with col_nav1:
         if current_idx > 0:
@@ -402,7 +544,7 @@ if not st.session_state.final_report:
 
     st.write("")
 
-    # If already evaluated, display structured metrics and feedback
+    # Display Evaluations if already answered
     if current_idx in st.session_state.evaluations:
         eval_text = st.session_state.evaluations[current_idx]
         metrics = st.session_state.manager.parse_evaluation_scores(eval_text)
@@ -424,7 +566,7 @@ if not st.session_state.final_report:
         with c5:
             st.metric(label="Terminology", value=f"{metrics['terminology'] or overall}/10")
 
-        # Detailed Feedback Expander
+        # Detailed Feedback
         with st.expander("🔍 In-Depth Technical Assessment & Exemplary Response", expanded=True):
             st.markdown(eval_text)
 
@@ -442,15 +584,13 @@ if not st.session_state.final_report:
                 if audio_data:
                     st.audio(io.BytesIO(audio_data), format='audio/mp3')
 
-        # Elevate Coach Interactive Q&A
+        # Follow-Up Chat
         st.write("")
         st.markdown("### 💬 Elevate Coach Follow-Up")
-        st.caption("Ask questions about where you lost points or request technical clarifications.")
-
         chat_key = f"chat_{current_idx}"
         if chat_key not in st.session_state:
             st.session_state[chat_key] = [
-                {"role": "assistant", "content": "I'm Elevate. What would you like to clarify about this evaluation?"}
+                {"role": "assistant", "content": f"Hi {profile['name'].split()[0]}! What would you like to clarify about this question or your rating?"}
             ]
 
         with st.container(border=True):
@@ -471,7 +611,7 @@ if not st.session_state.final_report:
                     st.session_state[chat_key].append({"role": "assistant", "content": ai_resp})
                     st.rerun()
 
-            if user_prompt := st.chat_input("Ask why you received this score or how to phrase it better..."):
+            if user_prompt := st.chat_input("Ask why you received this score or how to improve..."):
                 st.session_state[chat_key].append({"role": "user", "content": user_prompt})
                 st.rerun()
 
@@ -522,7 +662,8 @@ if not st.session_state.final_report:
                                 question=current_q,
                                 text_answer=cleaned_text,
                                 code_snippet=cleaned_code,
-                                audio_bytes=audio_bytes
+                                audio_bytes=audio_bytes,
+                                candidate_profile=st.session_state.candidate_profile
                             )
                             st.session_state.evaluations[current_idx] = evaluation_result
                             st.session_state[f"feedback_audio_{current_idx}"] = None
@@ -535,7 +676,7 @@ if not st.session_state.final_report:
     st.divider()
     if len(st.session_state.evaluations) == total_q:
         st.balloons()
-        st.success("🎉 You have completed all questions in this session!")
+        st.success(f"🎉 Congratulations {profile['name']}! You have completed all questions.")
         if st.button("Generate Executive Assessment Report 📈", type="primary", use_container_width=True):
             with st.spinner("Synthesizing comprehensive assessment dossier..."):
                 try:
@@ -543,14 +684,16 @@ if not st.session_state.final_report:
                         {"question": q, "evaluation": st.session_state.evaluations[i]}
                         for i, q in enumerate(st.session_state.questions)
                     ]
-                    report = st.session_state.manager.generate_final_report(qas)
+                    report = st.session_state.manager.generate_final_report(
+                        qas, candidate_profile=st.session_state.candidate_profile
+                    )
                     st.session_state.final_report = report
                     st.toast("🎉 Executive Report Ready!")
                     st.rerun()
                 except Exception as e:
                     st.error(f"Report generation error: {e}")
 
-# --- Comprehensive Final Report & Export Center ---
+# --- COMPREHENSIVE FINAL REPORT & EXPORT CENTER ---
 else:
     st.balloons()
     st.markdown('<h2 style="text-align:center; color:#38BDF8;">📋 Executive Assessment Dossier</h2>', unsafe_allow_html=True)
@@ -580,7 +723,6 @@ else:
     # Download Dossier & Reset Controls
     col_d1, col_d2 = st.columns(2)
     with col_d1:
-        # Generate Markdown export
         qas = [
             {"question": q, "evaluation": st.session_state.evaluations.get(i, "")}
             for i, q in enumerate(st.session_state.questions)
@@ -591,12 +733,14 @@ else:
             difficulty=st.session_state.interview_meta.get("difficulty", "Intermediate"),
             qas=qas,
             final_report=st.session_state.final_report,
-            study_materials=st.session_state.study_materials
+            study_materials=st.session_state.study_materials,
+            candidate_profile=st.session_state.candidate_profile
         )
+        safe_name = profile['name'].replace(' ', '_')
         st.download_button(
             label="📥 Download Complete Interview Dossier (.md)",
             data=export_md,
-            file_name=f"Elevate_AI_Interview_{st.session_state.interview_meta.get('role', 'Candidate').replace(' ', '_')}.md",
+            file_name=f"Elevate_AI_{safe_name}_Interview_Dossier.md",
             mime="text/markdown",
             use_container_width=True
         )
